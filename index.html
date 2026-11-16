@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FilePreflight — Local SharePoint & OneDrive Migration Audit Tool for Windows</title>
+  <meta name="description" content="Audit 300,000+ local files in seconds, simulate the exact 400-character SharePoint & OneDrive path limit, bulk-fix illegal filenames with 1-click rollback. 100% offline." />
+  <style>
+    :root {
+      --bg: #F5F5F5;
+      --surface: #FFFFFF;
+      --border: #E1DFDD;
+      --text: #323130;
+      --text-secondary: #605E5C;
+      --navy: #0F2942;
+      --blue: #0078D4;
+      --blue-hover: #106EBE;
+      --teal: #038387;
+      --green: #107C41;
+      --green-bg: #DFF6DD;
+      --red: #A4262C;
+      --red-bg: #FDE7E9;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Inter, Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--navy); }
+    .brand-title { font-size: 20px; letter-spacing: -0.02em; }
+    .brand-title strong { font-weight: 600; }
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: #F3F2F1;
+      padding: 2px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { text-decoration: none; color: var(--text-secondary); font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: var(--blue); }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-primary { background: var(--blue); color: #FFFFFF; }
+    .btn-primary:hover { background: var(--blue-hover); }
+    .btn-secondary { background: var(--surface); color: var(--text); border-color: #8A8886; }
+    .btn-secondary:hover { background: #F3F2F1; }
+    .btn-lg { padding: 13px 26px; font-size: 15px; }
+
+    /* Hero */
+    .hero { padding: 64px 0 48px; text-align: center; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    .pill-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    h1 {
+      font-size: clamp(32px, 4.5vw, 48px);
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      max-width: 820px;
+      margin: 0 auto 18px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 680px;
+      margin: 0 auto 32px;
+    }
+    .hero-cta { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-bottom: 14px; }
+    .hero-meta { font-size: 13px; color: var(--text-secondary); }
+
+    /* App Mockup */
+    .mockup-wrap {
+      margin: 44px auto 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+      overflow: hidden;
+      text-align: left;
+    }
+    .mockup-bar {
+      background: #F3F2F1;
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+    }
+    .badge-pro {
+      background: #EFF6FC;
+      color: var(--blue);
+      border: 1px solid #C7E0F4;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .kpi {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+    .kpi-label { font-size: 12px; color: var(--text-secondary); }
+    .kpi-val { font-size: 26px; font-weight: 600; margin: 2px 0; }
+    .kpi-sub { font-size: 12px; color: var(--text-secondary); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      padding: 10px 16px;
+      background: #FAF9F8;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+    td { padding: 11px 16px; border-bottom: 1px solid #EDEBE9; font-family: Consolas, "Cascadia Code", monospace; }
+    td.sans { font-family: "Segoe UI", sans-serif; }
+    .tag-err {
+      background: var(--red-bg);
+      color: var(--red);
+      font-family: "Segoe UI", sans-serif;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    .tag-ok { color: var(--green); font-weight: 600; }
+
+    /* Features */
+    section { padding: 64px 0; }
+    .section-title { text-align: center; margin-bottom: 40px; }
+    .section-title h2 { font-size: 30px; color: var(--navy); font-weight: 600; margin-bottom: 8px; }
+    .section-title p { color: var(--text-secondary); font-size: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 24px;
+    }
+    .card h3 { font-size: 17px; color: var(--navy); margin-bottom: 8px; }
+    .card p { font-size: 14px; color: var(--text-secondary); }
+
+    /* Pricing */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 24px;
+      align-items: stretch;
+    }
+    .price-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .price-card.featured {
+      border: 2px solid var(--blue);
+      box-shadow: 0 8px 24px rgba(0, 120, 212, 0.12);
+    }
+    .plan-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: #EFF6FC;
+      color: var(--blue);
+      margin-bottom: 12px;
+    }
+    .price { font-size: 36px; font-weight: 700; color: var(--navy); margin: 8px 0 4px; }
+    .price span { font-size: 14px; font-weight: 400; color: var(--text-secondary); }
+    .plan-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; }
+    .feat-list { list-style: none; margin-bottom: 24px; font-size: 14px; }
+    .feat-list li { padding: 7px 0; border-bottom: 1px solid #F3F2F1; display: flex; gap: 8px; }
+    .check { color: var(--green); font-weight: 700; }
+    .cross { color: #A19F9D; font-weight: 700; }
+    .feat-list li:has(.cross) { color: var(--text-secondary); }
+
+    /* Legal & Footer */
+    .legal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 28px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .legal-box h3 { color: var(--navy); font-size: 15px; margin: 16px 0 6px; }
+    .legal-box h3:first-child { margin-top: 0; }
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      padding: 32px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .footer-flex { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+    @media (max-width: 768px) {
+      .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="container nav">
+    <a href="#" class="brand">
+      <svg width="28" height="28" viewBox="0 0 64 64" fill="none" aria-hidden="true">
+        <path d="M32 4L8 14V31C8 46.5 18.2 57.6 32 61C45.8 57.6 56 46.5 56 31V14L32 4Z" fill="#0078D4"/>
+        <path d="M32 32L56 22V31C56 46.5 45.8 57.6 32 61V32Z" fill="#038387"/>
+        <path d="M21 32.5L28.5 40L44 24.5" stroke="#FFFFFF" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-title"><strong>File</strong>Preflight</span>
+      <span class="brand-tag">by OpsForge Tools</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#terms">Terms & Refunds</a>
+      <a href="https://opsforgetools.lemonsqueezy.com/checkout/buy/5016493b-1220-40d3-9495-d0764c2e46ee" class="btn btn-primary">Get Pro License</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="container">
+      <div class="pill"><span class="pill-dot"></span> 100% Local &amp; Offline · Zero Cloud Uploads · Native Rust Engine</div>
+      <h1>Catch &amp; Fix SharePoint and OneDrive Migration Errors Before You Upload</h1>
+      <p>Scan 300,000+ local files in seconds, simulate the exact 400-character Microsoft 365 URL path limit, and — with Pro — safely bulk-rename illegal files with 1-click rollback.</p>
+      <div class="hero-cta">
+        <!-- Direct download from GitHub Releases (v1.0.0). When a new version ships, update the
+             tag here and in the "Scanner Free" pricing card. -->
+        <a href="https://github.com/kenymtz/filepreflight/releases/download/v1.0.0/FilePreflight-Scanner-Free.exe" download class="btn btn-secondary btn-lg">Download Free Scanner (Windows 10/11)</a>
+        <a href="https://opsforgetools.lemonsqueezy.com/checkout/buy/5016493b-1220-40d3-9495-d0764c2e46ee" class="btn btn-primary btn-lg">Buy FilePreflight Pro — From $29.99</a>
+      </div>
+      <div class="hero-meta">Windows 10 / 11 (x64) · Portable single executable · No installation or admin rights required</div>
+
+      <div class="mockup-wrap">
+        <div class="mockup-bar">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <strong style="color:var(--navy);">FilePreflight</strong>
+            <span class="badge-pro">PRO</span>
+            <span style="color:var(--text-secondary);">Local audit before migrating to Microsoft 365, SharePoint &amp; OneDrive</span>
+          </div>
+          <span style="color:var(--green);font-weight:600;">● Offline Engine Ready</span>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi-label">Items Scanned</div>
+            <div class="kpi-val">148,920</div>
+            <div class="kpi-sub">Scanned in 1.8 seconds</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Blocking Conflicts</div>
+            <div class="kpi-val" style="color:var(--red);">312</div>
+            <div class="kpi-sub">Illegal chars, reserved names, paths &gt;400</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Auto-Fixable</div>
+            <div class="kpi-val" style="color:var(--blue);">308</div>
+            <div class="kpi-sub">Collision-safe rename + rollback log</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-label">Longest Target Path</div>
+            <div class="kpi-val">384</div>
+            <div class="kpi-sub">of 400 SharePoint chars (with target URL)</div>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Severity</th>
+              <th>Rule Violation</th>
+              <th>Original Local Path</th>
+              <th>Proposed Safe Name</th>
+              <th>Length</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag-err">BLOCKING</span></td>
+              <td class="sans">Leading or trailing space</td>
+              <td>Contracts/Drafts_2026 /</td>
+              <td class="tag-ok">Drafts_2026</td>
+              <td>22</td>
+            </tr>
+            <tr>
+              <td><span class="tag-err">BLOCKING</span></td>
+              <td class="sans">Reserved name</td>
+              <td>Finance/CON.pdf</td>
+              <td class="tag-ok">CON_.pdf</td>
+              <td>15</td>
+            </tr>
+            <tr>
+              <td><span class="tag-err">BLOCKING</span></td>
+              <td class="sans">Trailing period</td>
+              <td>Legal/Q3_Closing.</td>
+              <td class="tag-ok">Q3_Closing</td>
+              <td>17</td>
+            </tr>
+            <tr>
+              <td><span class="tag-err">BLOCKING</span></td>
+              <td class="sans">Invalid character (: ?)</td>
+              <td>Clients/Acme: Q1?.xlsx</td>
+              <td class="tag-ok">Acme_ Q1_.xlsx</td>
+              <td>22</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="container">
+      <div class="section-title">
+        <h2>Built for IT Admins, Consultants &amp; Data Privacy</h2>
+        <p>Prevent failed SharePoint Migration Tool (SPMT) and OneDrive sync jobs before copying a single byte.</p>
+      </div>
+      <div class="grid-3">
+        <div class="card">
+          <h3>100% Air-Gapped &amp; Private</h3>
+          <p>FilePreflight never connects to the internet or uploads folder trees. Ideal for legal, healthcare, financial, and government migrations under strict NDA.</p>
+        </div>
+        <div class="card">
+          <h3>Exact 400-Char SharePoint Math</h3>
+          <p>Paste your target SharePoint site &amp; library URL to calculate real UTF-16 encoded path lengths, catching deep folder truncations before upload.</p>
+        </div>
+        <div class="card">
+          <h3>Safe Bulk Rename &amp; 1-Click Rollback <span class="badge-pro">PRO</span></h3>
+          <p>Automatically resolves naming collisions, skips symlinks/junctions safely, and writes a transactional JSON rollback journal to undo changes anytime.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" style="background:#EDEBE9;border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="container">
+      <div class="section-title">
+        <h2>Simple, One-Time Perpetual Pricing</h2>
+        <p>No subscriptions. Pay once, own the binary forever.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="price-card">
+          <div>
+            <span class="plan-badge" style="background:#F3F2F1;color:var(--text-secondary);">Free Edition</span>
+            <h3>Scanner Free</h3>
+            <div class="price">$0 <span>forever</span></div>
+            <p class="plan-desc">Full local auditing to measure migration risk on any Windows folder. 100% offline and read-only: it never modifies your files.</p>
+            <ul class="feat-list">
+              <li><span class="check">✓</span> Unlimited local folder scans</li>
+              <li><span class="check">✓</span> Full Microsoft 365 / SharePoint rule engine</li>
+              <li><span class="check">✓</span> Target URL 400-char path simulator</li>
+              <li><span class="check">✓</span> Real-time conflict search &amp; filtering</li>
+              <li><span class="cross">✕</span> 1-click auto-repair, instant undo &amp; HTML/CSV export (Pro)</li>
+            </ul>
+          </div>
+          <a href="https://github.com/kenymtz/filepreflight/releases/download/v1.0.0/FilePreflight-Scanner-Free.exe" download class="btn btn-secondary" style="width:100%;">Download Scanner Free (.exe)</a>
+        </div>
+
+        <div class="price-card featured">
+          <div>
+            <span class="plan-badge">Most Popular</span>
+            <h3>Personal License (1 PC)</h3>
+            <div class="price">$29.99 <span>one-time</span></div>
+            <p class="plan-desc">For IT admins and professionals preparing their company migration.</p>
+            <ul class="feat-list">
+              <li><span class="check">✓</span> Everything in Scanner Free</li>
+              <li><span class="check">✓</span> <strong>1-Click Bulk Auto-Repair</strong> for all fixable issues</li>
+              <li><span class="check">✓</span> <strong>Instant Undo</strong> via transactional rollback journal</li>
+              <li><span class="check">✓</span> Executive <strong>HTML &amp; CSV</strong> audit report export</li>
+            </ul>
+          </div>
+          <a href="https://opsforgetools.lemonsqueezy.com/checkout/buy/5016493b-1220-40d3-9495-d0764c2e46ee" class="btn btn-primary" style="width:100%;">Buy Personal License ($29.99)</a>
+        </div>
+
+        <div class="price-card">
+          <div>
+            <span class="plan-badge" style="background:#E6F4F4;color:var(--teal);">Commercial / MSP</span>
+            <h3>IT Consultant / MSP License</h3>
+            <div class="price">$69.00 <span>one-time</span></div>
+            <p class="plan-desc">For MSPs and consultants executing migrations across multiple client tenants.</p>
+            <ul class="feat-list">
+              <li><span class="check">✓</span> All Pro Auto-Repair, Rollback &amp; Export features</li>
+              <li><span class="check">✓</span> <strong>Unlimited client migrations</strong> &amp; workstations</li>
+              <li><span class="check">✓</span> Client-ready standalone HTML compliance reports</li>
+              <li><span class="check">✓</span> Lifetime updates for v1.x</li>
+            </ul>
+          </div>
+          <a href="https://opsforgetools.lemonsqueezy.com/checkout/buy/5016493b-1220-40d3-9495-d0764c2e46ee" class="btn btn-primary" style="width:100%;">Buy MSP License ($69.00)</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="terms">
+    <div class="container">
+      <div class="legal-box">
+        <h3>Terms of License &amp; Software Delivery</h3>
+        <p>FilePreflight Pro is distributed by OpsForge Tools as a perpetual-license Windows desktop executable. Upon completing checkout via our Merchant of Record (Lemon Squeezy), you receive immediate access to download <code>FilePreflight-Pro.exe</code>. Personal Licenses permit installation on 1 Windows workstation; IT Consultant / MSP Licenses permit commercial use across unlimited client migration projects.</p>
+
+        <h3>14-Day Refund Policy</h3>
+        <p>We provide a completely free Scanner Edition so you can verify compatibility and inspect every conflict on your exact dataset prior to purchasing. If FilePreflight Pro fails to perform as documented on Windows 10 or Windows 11 and our support cannot resolve the issue, contact us within 14 days of purchase for a full refund.</p>
+
+        <h3>Privacy Policy &amp; Trademark Notice</h3>
+        <p>FilePreflight operates 100% locally on your machine and collects zero telemetry, file names, or directory metadata. Payment processing and tax compliance are handled securely by Lemon Squeezy. Microsoft, Microsoft 365, SharePoint, OneDrive, and Windows are trademarks of Microsoft Corporation; FilePreflight is an independent utility developed by OpsForge Tools and is not affiliated with or endorsed by Microsoft.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container footer-flex">
+    <div><strong>OpsForge Tools</strong> — Independent B2B Utilities for Windows &amp; Cloud Migrations.</div>
+    <div>Support &amp; Licensing: <a href="mailto:opsforgetools@gmail.com" style="color:var(--blue);text-decoration:none;">opsforgetools@gmail.com</a></div>
+  </div>
+</footer>
+
+</body>
+</html>
